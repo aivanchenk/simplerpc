@@ -5,12 +5,13 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="NLog" Version="5.3.3"/>
-		<PackageReference Include="SimpleRpc" Version="1.0.0-beta1"/>
-		<PackageReference Include="SimpleRpc.Serialization.Hyperion" Version="1.0.0-beta1"/>
+		<PackageReference Include="NLog" Version="5.3.3" />
+		<PackageReference Include="SimpleRpc" Version="1.0.0-beta1" />
+		<PackageReference Include="SimpleRpc.Serialization.Hyperion" Version="1.0.0-beta1" />
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\TrafficLightContract\TrafficLightContract.csproj"/>
+		<ProjectReference Include="..\TrafficLightContract\TrafficLightContract.csproj" />
+		<ProjectReference Include="..\FarmContract\FarmContract.csproj" />
 	</ItemGroup>
 </Project>

@@ -6,13 +6,14 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="NLog" Version="5.3.3"/>
-		<PackageReference Include="SimpleRpc" Version="1.0.0-beta1"/>
-		<PackageReference Include="SimpleRpc.Serialization.Hyperion" Version="1.0.0-beta1"/>
-		<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0"/>
+		<PackageReference Include="NLog" Version="5.3.3" />
+		<PackageReference Include="SimpleRpc" Version="1.0.0-beta1" />
+		<PackageReference Include="SimpleRpc.Serialization.Hyperion" Version="1.0.0-beta1" />
+		<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\TrafficLightContract\TrafficLightContract.csproj"/>
+		<ProjectReference Include="..\TrafficLightContract\TrafficLightContract.csproj" />
+		<ProjectReference Include="..\FarmContract\FarmContract.csproj" />
 	</ItemGroup>
 </Project>
