@@ -10,7 +10,6 @@ using SimpleRpc.Serialization.Hyperion;
 
 using Services;
 
-
 public class Server
 {
 	/// <summary>
@@ -83,8 +82,8 @@ public class Server
 
 		//add our custom services
 		builder.Services
-			// .AddScoped<ITrafficLightService, TrafficLightService>();  //instance-per-request, AddTransient would result in the same
-			.AddSingleton<ITrafficLightService>(new TrafficLightService());   //singleton
+			// .AddScoped<IFarmService, TrafficLightService>();  //instance-per-request, AddTransient would result in the same
+			.AddSingleton<IFarmService>(new FarmService());   //singleton
 
 		//build the server
 		var app = builder.Build();

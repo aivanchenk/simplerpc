@@ -1,4 +1,4 @@
-﻿namespace FarmContract;
+﻿namespace Services;
 
 /// <summary>
 /// Descriptor of submission result
