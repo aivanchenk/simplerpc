@@ -8,12 +8,8 @@ using Services;
 public class FarmService : IFarmService
 {
     public SubmissionResult SubmitFood(int amount)
-    {
-        return new SubmissionResult { IsAccepted = true };
-    }
+        => new SubmissionResult { IsAccepted = true, FailReason = string.Empty };
 
     public SubmissionResult SubmitWater(int amount)
-    {
-        return new SubmissionResult { IsAccepted = true };
-    }
+        => new SubmissionResult { IsAccepted = true, FailReason = string.Empty };
 }

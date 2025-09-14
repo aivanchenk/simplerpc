@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FarmContract", "FarmContrac
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Farm", "Farm\Farm.csproj", "{C9D3C47B-A6AA-47C8-94E9-41305A6806B1}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Water", "Water\Water.csproj", "{89FAF43C-7A33-4BC7-8E80-5FB2008B87EB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -83,6 +85,18 @@ Global
 		{C9D3C47B-A6AA-47C8-94E9-41305A6806B1}.Release|x64.Build.0 = Release|Any CPU
 		{C9D3C47B-A6AA-47C8-94E9-41305A6806B1}.Release|x86.ActiveCfg = Release|Any CPU
 		{C9D3C47B-A6AA-47C8-94E9-41305A6806B1}.Release|x86.Build.0 = Release|Any CPU
+		{89FAF43C-7A33-4BC7-8E80-5FB2008B87EB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{89FAF43C-7A33-4BC7-8E80-5FB2008B87EB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{89FAF43C-7A33-4BC7-8E80-5FB2008B87EB}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{89FAF43C-7A33-4BC7-8E80-5FB2008B87EB}.Debug|x64.Build.0 = Debug|Any CPU
+		{89FAF43C-7A33-4BC7-8E80-5FB2008B87EB}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{89FAF43C-7A33-4BC7-8E80-5FB2008B87EB}.Debug|x86.Build.0 = Debug|Any CPU
+		{89FAF43C-7A33-4BC7-8E80-5FB2008B87EB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{89FAF43C-7A33-4BC7-8E80-5FB2008B87EB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{89FAF43C-7A33-4BC7-8E80-5FB2008B87EB}.Release|x64.ActiveCfg = Release|Any CPU
+		{89FAF43C-7A33-4BC7-8E80-5FB2008B87EB}.Release|x64.Build.0 = Release|Any CPU
+		{89FAF43C-7A33-4BC7-8E80-5FB2008B87EB}.Release|x86.ActiveCfg = Release|Any CPU
+		{89FAF43C-7A33-4BC7-8E80-5FB2008B87EB}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
