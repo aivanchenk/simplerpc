@@ -62,10 +62,6 @@ class FarmLogic
 
     public void BackgroundTask()
     {
-        //intialize random number generator
-        var rnd = new Random();
-
-        //
         while (true)
         {
             //wait a bit
@@ -74,7 +70,7 @@ class FarmLogic
             //lock the state
             lock (mState.AccessLock)
             {
-                mLog.Info($"Accepting resources");
+                //do nothing for now
             }
         }
     }

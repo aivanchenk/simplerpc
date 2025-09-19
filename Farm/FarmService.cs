@@ -15,10 +15,9 @@ public class FarmService : IFarmService
         return mLogic.SubmitWater(amount);
     }
 
-        public SubmissionResult SubmitFood(int amount)
+    public SubmissionResult SubmitFood(int amount)
     {
-        return mLogic.SubmitWater(amount);
+        return mLogic.SubmitFood(amount);
     }
-
     
 }
