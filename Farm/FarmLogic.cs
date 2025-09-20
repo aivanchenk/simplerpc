@@ -116,9 +116,9 @@ class FarmLogic
         if (consumption >= mState.AccumulatedFood)
         {
             mState.starveRounds++;
+            mLog.Warn($"Was unable to consume {consumption} of food.");
             if (mState.starveRounds >= maxFailRounds)
             {
-                mLog.Warn($"Was unable to consume {consumption} of food.");
                 HandleFarmFailure("food");
             }
             return 0;
@@ -136,9 +136,10 @@ class FarmLogic
         if (consumption >= mState.AccumulatedWater)
         {
             mState.thirstRounds++;
+            mLog.Warn($"Was unable to consume {consumption} of water.");
+
             if (mState.thirstRounds >= maxFailRounds)
             {
-                mLog.Warn($"Was unable to consume {consumption} of water.");
                 HandleFarmFailure("water");
             }
             return 0;
