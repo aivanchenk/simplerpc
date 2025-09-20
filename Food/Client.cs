@@ -73,6 +73,40 @@ class Client
 
                 var api = sp.GetRequiredService<IFarmService>();
                 var sum = api.SubmitFood(3);
+
+                // while (true)
+                {
+                    // 1. create new supply for this tick
+                    double d = rnd.NextDouble() * 2.0 - 1.0;
+                    _pendingFood += produced;
+
+                    // 2. nothing to send? skip quickly
+                    if (_pendingFood == 0)
+                    {
+                        Thread.Sleep(500);
+                        continue;
+                    }
+
+                    // 3. try to submit the entire backlog
+                    var result = api.SubmitFood(_pendingFood);
+
+                    if (result.IsAccepted)
+                    {
+                        _pendingFood = 0;                   // everything delivered
+                        mLog.Info($"Submitted {_pendingFood} food.");
+                    }
+                    else if (result.FailReason == "FarmSelling")   // whatever token you return
+                    {
+                        mLog.Info("Farm is selling; will retry with accumulated food.");
+                        Thread.Sleep(1000);                 // lightweight pacing between retries
+                    }
+                    else
+                    {
+                        mLog.Warn($"Submission failed: {result.FailReason}. Keeping {_pendingFood} to retry.");
+                        Thread.Sleep(2000);
+                    }
+                }
+
                 Console.WriteLine($"Submitted food {sum.IsAccepted}");
             }
             catch (Exception e)
