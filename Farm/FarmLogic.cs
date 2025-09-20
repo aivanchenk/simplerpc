@@ -14,14 +14,12 @@ public class FarmState
     /// <summary>
     /// Total accumulated food.
     /// </summary>
-    public long AccumulatedFood = 0;
+    public double AccumulatedFood = 0;
 
     /// <summary>
     /// Total accumulated water.
     /// </summary>
-    public long AccumulatedWater = 0;
-
-    public long TotalGrowthPoints = 0;
+    public double AccumulatedWater = 0;
 
     public double farmSize = 0.0;
 
@@ -30,6 +28,8 @@ public class FarmState
     public double growthRate = 0.1;
 
     public double consumptionCoef = 0.01;
+
+    public double totalConsumedResources = 0.0;
 
     /// <summary>
     /// Timestamp of the last consumption event.
@@ -88,14 +88,14 @@ class FarmLogic
         }
     }
     
-    private long GetRandomConsumption(long available)
+    private double GetRandomConsumption(double available)
     {
         if (available <= 0)
         {
             return 0;
         }
 
-        var consumption = (long)Math.Round(mRandom.NextDouble() * available);
+        var consumption = (double)Math.Round(mRandom.NextDouble() * available);
 
         if (consumption > available)
         {
@@ -104,34 +104,18 @@ class FarmLogic
 
         return consumption;
     }
-
-     /// <summary>
-    /// Provides read-only access to the current food total.
-    /// </summary>
-    public long CurrentFoodTotal
+    
+    private double ComputeConsumptionCoefficient(double total)
     {
-        get
-        {
-            lock (mState.AccessLock)
-            {
-                return mState.AccumulatedFood;
-            }
-        }
+        return Math.Clamp(
+            mState.baseRate + mState.growthRate * Math.Log10(total + 1),
+            mState.baseRate,
+            2.0);
     }
 
-    /// <summary>
-    /// Provides read-only access to the current water total.
-    /// </summary>
-    /// <returns></returns>
-    public long CurrentWaterTotal
+    private double ComputeFarmSize(double total)
     {
-        get
-        {
-            lock (mState.AccessLock)
-            {
-                return mState.AccumulatedWater;
-            }
-        }
+        return Math.Log10(total + 1);
     }
 
     public void BackgroundTask()
@@ -140,28 +124,27 @@ class FarmLogic
         {
             Thread.Sleep(TimeSpan.FromSeconds(2));
 
-            long consumedFood = 0;
-            long consumedWater = 0;
+            double consumedFood = 0;
+            double consumedWater = 0;
 
             //lock the state
             lock (mState.AccessLock)
             {
-                consumedFood = GetRandomConsumption(mState.AccumulatedFood);
-                consumedWater = GetRandomConsumption(mState.AccumulatedWater);
+                consumedFood = GetRandomConsumption(mState.AccumulatedFood) * mState.consumptionCoef;
+                consumedWater = GetRandomConsumption(mState.AccumulatedWater) * mState.consumptionCoef;
 
                 mState.AccumulatedFood -= consumedFood;
                 mState.AccumulatedWater -= consumedWater;
                 mState.LastConsumptionTimestamp = DateTime.UtcNow;
 
-                mState.TotalGrowthPoints += (consumedFood + consumedWater);
-                mState.farmSize = Math.Log10(mState.TotalGrowthPoints + 1);
-                mState.consumptionCoef = Math.Clamp(mState.baseRate + mState.growthRate * mState.farmSize,
-                                    0.0,
-                                    0.9);
+                mState.totalConsumedResources += consumedFood + consumedWater;
+
+                mState.farmSize = ComputeFarmSize(mState.totalConsumedResources);
+                mState.consumptionCoef = ComputeConsumptionCoefficient(mState.totalConsumedResources);
 
                 mLog.Info($"Consumed {consumedFood} food and {consumedWater} water. Remaining totals - Food: {mState.AccumulatedFood}, Water: {mState.AccumulatedWater}.");
                 mLog.Info($"Farm size after consumption {mState.farmSize}, consumption coefficient has been updated to {mState.consumptionCoef}.");
-            }   
+            }
         }
     }
 }
