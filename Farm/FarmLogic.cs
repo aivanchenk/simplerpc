@@ -1,4 +1,4 @@
-namespace Servers;
+﻿namespace Servers;
 
 using NLog;
 
@@ -10,7 +10,7 @@ public class FarmState
     /// Access lock.
     /// </summary>
     public readonly object AccessLock = new object();
-    
+
     /// <summary>
     /// Total accumulated food.
     /// </summary>
@@ -35,6 +35,9 @@ public class FarmState
     /// Timestamp of the last consumption event.
     /// </summary>
     public DateTime? LastConsumptionTimestamp;
+    
+    public bool IsSelling = false;
+    public DateTime? SellingUntil = null;
 }
 
 
@@ -66,6 +69,8 @@ class FarmLogic
 
     public int maxFailRounds = 2;
 
+    public double maxFarmSize = 2.5;
+
     
     /// <summary>
     /// Constructor.
@@ -81,6 +86,11 @@ class FarmLogic
     {
         lock (mState.AccessLock)
         {
+            if (mState.IsSelling)
+            {
+                return new SubmissionResult { IsAccepted = false, FailReason = "FarmSelling" };
+            }
+
             mState.AccumulatedWater += amount;
             return new SubmissionResult { IsAccepted = true, FailReason = string.Empty };
         }
@@ -90,6 +100,10 @@ class FarmLogic
     {
         lock (mState.AccessLock)
         {
+            if (mState.IsSelling)
+            {
+                return new SubmissionResult { IsAccepted = false, FailReason = "FarmSelling" };
+            }
             mState.AccumulatedFood += amount;
             return new SubmissionResult { IsAccepted = true, FailReason = string.Empty };
         }
@@ -163,6 +177,19 @@ class FarmLogic
         mLog.Info("Farm state has been reset. Background processing will continue with a fresh farm.");
     }
 
+    private void HandleFarmSelling()
+    {
+        if (mState.IsSelling && mState.SellingUntil.HasValue && DateTime.UtcNow >= mState.SellingUntil.Value)
+        {
+            ResetFarmState();
+            mLog.Info("Farm selling period has ended. Farm is no longer selling.");
+            mState.IsSelling = false;
+            mState.SellingUntil = null;
+            
+        }
+    }
+
+
     public void BackgroundTask()
     {
         while (true)
@@ -175,20 +202,36 @@ class FarmLogic
             //lock the state
             lock (mState.AccessLock)
             {
-                consumedFood = GetRandomFoodConsumption();
-                consumedWater = GetRandomWaterConsumption();
+                if (!mState.IsSelling)
+                {
+                    consumedFood = GetRandomFoodConsumption();
+                    consumedWater = GetRandomWaterConsumption();
 
-                mState.AccumulatedFood -= consumedFood;
-                mState.AccumulatedWater -= consumedWater;
-                mState.LastConsumptionTimestamp = DateTime.UtcNow;
+                    mState.AccumulatedFood -= consumedFood;
+                    mState.AccumulatedWater -= consumedWater;
+                    mState.LastConsumptionTimestamp = DateTime.UtcNow;
 
-                mState.totalConsumedResources += consumedFood + consumedWater;
+                    mState.totalConsumedResources += consumedFood + consumedWater;
 
-                mState.farmSize = ComputeFarmSize(mState.totalConsumedResources);
-                mState.consumptionCoef = ComputeConsumptionCoefficient(mState.totalConsumedResources);
+                    mState.farmSize = ComputeFarmSize(mState.totalConsumedResources);
+                    mState.consumptionCoef = ComputeConsumptionCoefficient(mState.totalConsumedResources);
 
-                mLog.Info($"Consumed {consumedFood} food and {consumedWater} water. Remaining totals - Food: {mState.AccumulatedFood}, Water: {mState.AccumulatedWater}.");
-                mLog.Info($"Farm size after consumption {mState.farmSize}, consumption coefficient has been updated to {mState.consumptionCoef}.");
+                    mLog.Info($"Consumed {consumedFood:F1} food and {consumedWater:F1} water. Remaining totals - Food: {mState.AccumulatedFood:F1}, Water: {mState.AccumulatedWater:F1}.");
+                    mLog.Info($"Farm size after consumption {mState.farmSize:F1}, consumption coefficient has been updated to {mState.consumptionCoef:F1}.");
+
+                    if (mState.farmSize >= maxFarmSize && !mState.IsSelling)
+                    {
+                        mState.IsSelling = true;
+                        mState.SellingUntil = DateTime.UtcNow.AddSeconds(5); //selling period lasts for 5 seconds
+                        mLog.Info($"Farm has reached maximum size of {maxFarmSize}. Farm is now selling for the next 5 seconds.");
+                    }
+                }
+                else
+                {
+                    mLog.Info($"Farm is currently selling. Selling will end at {mState.SellingUntil}.");
+                }
+                
+                HandleFarmSelling();
             }
         }
     }
