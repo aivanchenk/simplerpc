@@ -23,19 +23,13 @@ public class FarmState
 
     public double farmSize = 0.0;
 
-    public double baseRate = 0.05;
-
-    public double growthRate = 0.1;
-
     public double consumptionCoef = 0.01;
 
     public double totalConsumedResources = 0.0;
 
     public int thirstRounds = 0;
 
-    public int hungerRounds = 0;
-
-    public int maxFailRounds = 2;
+    public int starveRounds = 0;
 
     /// <summary>
     /// Timestamp of the last consumption event.
@@ -65,6 +59,13 @@ class FarmLogic
     /// Random generator for consumption amounts.
     /// </summary>
     private readonly Random mRandom = new Random();
+
+    public double baseRate = 0.05;
+
+    public double growthRate = 0.1;
+
+    public int maxFailRounds = 2;
+
     
     /// <summary>
     /// Constructor.
@@ -100,14 +101,16 @@ class FarmLogic
 
         if (consumption >= mState.AccumulatedFood)
         {
-            mState.hungerRounds++;
-            if (mState.thirstRounds >= mState.maxFailRounds)
+            mState.starveRounds++;
+            if (mState.starveRounds >= maxFailRounds)
             {
-                mLog.Warn("Farm has been without resources for 2 consecutive rounds. Farm has failed.");
+                mLog.Warn($"Was unable to consume {consumption} of food.");
+                HandleFarmFailure("food");
             }
             return 0;
         }
 
+        mState.starveRounds = 0;
         return consumption;
     }
 
@@ -119,27 +122,45 @@ class FarmLogic
         if (consumption >= mState.AccumulatedWater)
         {
             mState.thirstRounds++;
-            if (mState.thirstRounds >= mState.maxFailRounds)
+            if (mState.thirstRounds >= maxFailRounds)
             {
-                mLog.Warn("Farm has been without resources for 2 consecutive rounds. Farm has failed.");
+                mLog.Warn($"Was unable to consume {consumption} of water.");
+                HandleFarmFailure("water");
             }
             return 0;
         }
 
+        mState.thirstRounds = 0;
         return consumption;
     }
     
     private double ComputeConsumptionCoefficient(double total)
     {
-        return Math.Clamp(
-            mState.baseRate + mState.growthRate * Math.Log10(total + 1),
-            mState.baseRate,
-            2.0);
+        return Math.Clamp(baseRate + growthRate * Math.Log10(total + 1), baseRate, 2.0);
     }
 
     private double ComputeFarmSize(double total)
     {
         return Math.Log10(total + 1);
+    }
+
+    private void ResetFarmState()
+    {
+        mState.AccumulatedFood = 0;
+        mState.AccumulatedWater = 0;
+        mState.totalConsumedResources = 0;
+        mState.starveRounds = 0;
+        mState.thirstRounds = 0;
+        mState.farmSize = 0;
+        mState.consumptionCoef = 0.01;
+        mState.LastConsumptionTimestamp = null;
+    }
+
+    private void HandleFarmFailure(string failedResource)
+    {
+        mLog.Warn($"Farm has been without {failedResource} for {maxFailRounds} consecutive rounds. Farm has failed.");
+        ResetFarmState();
+        mLog.Info("Farm state has been reset. Background processing will continue with a fresh farm.");
     }
 
     public void BackgroundTask()
