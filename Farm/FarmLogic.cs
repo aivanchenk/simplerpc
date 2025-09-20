@@ -31,6 +31,12 @@ public class FarmState
 
     public double totalConsumedResources = 0.0;
 
+    public int thirstRounds = 0;
+
+    public int hungerRounds = 0;
+
+    public int maxFailRounds = 2;
+
     /// <summary>
     /// Timestamp of the last consumption event.
     /// </summary>
@@ -87,19 +93,37 @@ class FarmLogic
             return new SubmissionResult { IsAccepted = true, FailReason = string.Empty };
         }
     }
-    
-    private double GetRandomConsumption(double available)
+
+    private double GetRandomFoodConsumption()
     {
-        if (available <= 0)
+        var consumption = mRandom.Next(0, 100) * mState.consumptionCoef;
+
+        if (consumption >= mState.AccumulatedFood)
         {
+            mState.hungerRounds++;
+            if (mState.thirstRounds >= mState.maxFailRounds)
+            {
+                mLog.Warn("Farm has been without resources for 2 consecutive rounds. Farm has failed.");
+            }
             return 0;
         }
 
-        var consumption = (double)Math.Round(mRandom.NextDouble() * available);
+        return consumption;
+    }
 
-        if (consumption > available)
+    private double GetRandomWaterConsumption()
+    {
+
+        var consumption = mRandom.Next(0, 100) * mState.consumptionCoef;
+
+        if (consumption >= mState.AccumulatedWater)
         {
-            return available;
+            mState.thirstRounds++;
+            if (mState.thirstRounds >= mState.maxFailRounds)
+            {
+                mLog.Warn("Farm has been without resources for 2 consecutive rounds. Farm has failed.");
+            }
+            return 0;
         }
 
         return consumption;
@@ -130,8 +154,8 @@ class FarmLogic
             //lock the state
             lock (mState.AccessLock)
             {
-                consumedFood = GetRandomConsumption(mState.AccumulatedFood) * mState.consumptionCoef;
-                consumedWater = GetRandomConsumption(mState.AccumulatedWater) * mState.consumptionCoef;
+                consumedFood = GetRandomFoodConsumption();
+                consumedWater = GetRandomWaterConsumption();
 
                 mState.AccumulatedFood -= consumedFood;
                 mState.AccumulatedWater -= consumedWater;
