@@ -14,12 +14,22 @@ public class FarmState
     /// <summary>
     /// Total accumulated food.
     /// </summary>
-    public long AccumulatedFood;
+    public long AccumulatedFood = 0;
 
     /// <summary>
     /// Total accumulated water.
     /// </summary>
-    public long AccumulatedWater;
+    public long AccumulatedWater = 0;
+
+    public long TotalGrowthPoints = 0;
+
+    public double farmSize = 0.0;
+
+    public double baseRate = 0.05;
+
+    public double growthRate = 0.1;
+
+    public double consumptionCoef = 0.01;
 
     /// <summary>
     /// Timestamp of the last consumption event.
@@ -65,7 +75,6 @@ class FarmLogic
         lock (mState.AccessLock)
         {
             mState.AccumulatedWater += amount;
-            mLog.Info($"Accepted {amount} of water resource. Total water: {mState.AccumulatedWater}.");
             return new SubmissionResult { IsAccepted = true, FailReason = string.Empty };
         }
     }
@@ -75,7 +84,6 @@ class FarmLogic
         lock (mState.AccessLock)
         {
             mState.AccumulatedFood += amount;
-            mLog.Info($"Accepted {amount} of food resource. Total food: {mState.AccumulatedFood}.");
             return new SubmissionResult { IsAccepted = true, FailReason = string.Empty };
         }
     }
@@ -145,8 +153,15 @@ class FarmLogic
                 mState.AccumulatedWater -= consumedWater;
                 mState.LastConsumptionTimestamp = DateTime.UtcNow;
 
+                mState.TotalGrowthPoints += (consumedFood + consumedWater);
+                mState.farmSize = Math.Log10(mState.TotalGrowthPoints + 1);
+                mState.consumptionCoef = Math.Clamp(mState.baseRate + mState.growthRate * mState.farmSize,
+                                    0.0,
+                                    0.9);
+
                 mLog.Info($"Consumed {consumedFood} food and {consumedWater} water. Remaining totals - Food: {mState.AccumulatedFood}, Water: {mState.AccumulatedWater}.");
-            }
+                mLog.Info($"Farm size after consumption {mState.farmSize}, consumption coefficient has been updated to {mState.consumptionCoef}.");
+            }   
         }
     }
 }
